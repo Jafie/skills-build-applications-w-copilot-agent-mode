@@ -25,7 +25,26 @@ SECRET_KEY = 'django-insecure-4u78*46%95g^dh1v95s4bf#m!k6x8i1otvfvasf3mztk9q&zx%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+import os
+
+# Configure allowed hosts using the CODESPACE_NAME environment variable when available.
+# This avoids hard-coding the Codespace name while allowing the dev server to be
+# reached both via the Codespaces forwarding domain and localhost.
+codespace_name = os.environ.get('CODESPACE_NAME')
+allowed_hosts = [
+    '127.0.0.1',
+    'localhost',
+]
+if codespace_name:
+    allowed_hosts.append(f"{codespace_name}-8000.app.github.dev")
+
+ALLOWED_HOSTS = allowed_hosts
+
+# If serving from the Codespaces forwarded HTTPS host, add it to CSRF trusted origins
+# so Django accepts POSTs from that origin during development.
+CSRF_TRUSTED_ORIGINS = []
+if codespace_name:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{codespace_name}-8000.app.github.dev")
 
 
 # Application definition

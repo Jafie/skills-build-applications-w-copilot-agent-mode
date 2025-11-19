@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from .views import UserViewSet, TeamViewSet, ActivityViewSet, WorkoutViewSet, LeaderboardViewSet
+import os
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -31,6 +32,21 @@ router.register(r'leaderboard', LeaderboardViewSet)
 
 @api_view(['GET'])
 def api_root(request, format=None):
+    # If running in a Codespace, prefer returning the externally forwarded URL
+    # built from the CODESPACE_NAME environment variable so clients can call
+    # the API via the Codespaces forwarded domain. Otherwise fall back to
+    # building absolute URLs from the incoming request.
+    codespace = os.environ.get('CODESPACE_NAME')
+    if codespace:
+        base = f"https://{codespace}-8000.app.github.dev/api/"
+        return Response({
+            'users': f"{base}users/",
+            'teams': f"{base}teams/",
+            'activities': f"{base}activities/",
+            'workouts': f"{base}workouts/",
+            'leaderboard': f"{base}leaderboard/",
+        })
+
     return Response({
         'users': reverse('user-list', request=request, format=format),
         'teams': reverse('team-list', request=request, format=format),
